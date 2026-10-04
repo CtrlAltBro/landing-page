@@ -1,0 +1,382 @@
+---
+import { Image } from 'astro:assets';
+import Key from './Key.astro';
+import Logo from './Logo.astro';
+import { links, useScreens, useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale).install;
+const screens = useScreens(locale);
+const media = [
+  { image: screens.signup, position: 'center top', zoom: 1 },
+  null, // étape 2 : pas encore de capture, on montre une maquette de l'installeur
+  { image: screens.pairing, position: 'left top', zoom: 1.45 },
+];
+const sizes = '(max-width: 860px) calc(100vw - 2 * clamp(20px, 4vw, 48px)), 560px';
+---
+
+<section id="installer" aria-labelledby="installer-title" class="install">
+  <div class="wrap inner">
+    <h2 id="installer-title" class="t-h2 title" data-reveal>
+      {t.title}
+    </h2>
+    <ol class="steps">
+      {t.steps.map((step, i) => (
+        <li class="step">
+          <div class="step-copy" data-reveal data-reveal-from={i % 2 ? 'right' : 'left'}>
+            <Key tone="cream" size="md" square class="step-num" data-press-on-view>
+              {i + 1}
+            </Key>
+            <h3 class="t-h3 step-title">{step.title}</h3>
+            <p class="step-text">{step.text}</p>
+          </div>
+          <div
+            class="step-media"
+            data-reveal
+            data-reveal-from={i % 2 ? 'left' : 'right'}
+            style="--reveal-delay:90ms"
+          >
+            {media[i] ? (
+              <figure class="shot">
+                <Image
+                  src={media[i]!.image}
+                  alt={'alt' in step ? step.alt : ''}
+                  widths={[480, 720, 1120, 1440]}
+                  sizes={sizes}
+                  class="shot-img"
+                  style={`object-position:${media[i]!.position};--zoom:${media[i]!.zoom}`}
+                />
+              </figure>
+            ) : (
+              <div class="setup" data-theme="dark" data-installer-demo>
+                <div class="setup-bar" aria-hidden="true">
+                  <span class="setup-name">{t.installer.window}</span>
+                  <span>—</span>
+                  <span>✕</span>
+                </div>
+                <div class="setup-body">
+                  <div class="setup-head">
+                    <Logo size="sm" />
+                    <span class="setup-heading">{t.installer.heading}</span>
+                  </div>
+                  <dl class="setup-rows">
+                    <div>
+                      <dt>{t.installer.admin}</dt>
+                      <dd>
+                        <span class="ok" aria-hidden="true">
+                          ✓
+                        </span>
+                        {t.installer.adminValue}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>{t.installer.child}</dt>
+                      <dd>{t.installer.childValue}</dd>
+                    </div>
+                  </dl>
+                  <label class="cab-switch">
+                    <input type="checkbox" checked disabled />
+                    <span class="cab-switch__track">
+                      <span class="cab-switch__knob"></span>
+                    </span>
+                    {t.installer.startup}
+                  </label>
+                  <div class="setup-foot">
+                    <div class="setup-progress">
+                      <div class="setup-status">
+                        <span class="dot" aria-hidden="true"></span>
+                        <span data-installer-label data-done={t.installer.done}>
+                          {t.installer.progress}
+                        </span>
+                      </div>
+                      <div class="meter">
+                        <div class="meter-fill" data-installer-bar></div>
+                      </div>
+                    </div>
+                    <Key tone="violet" size="sm" data-installer-button>
+                      {t.installer.button}
+                    </Key>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <div class="download" data-reveal>
+      <Key tone="violet" size="lg" aria-disabled="true" class="download-key">
+        {t.download}
+      </Key>
+      <Key tone="sun" size="xs" class="soon">
+        {t.soon}
+      </Key>
+      <div class="download-notes">
+        <span class="note">
+          {t.soonNote}{' '}
+          <a href={links.repo} rel="noopener">
+            github.com/CtrlAltBro/app
+          </a>
+        </span>
+        <span class="note">{t.requirements}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .install {
+    border-top: 1px solid var(--border);
+  }
+  .inner {
+    padding-top: var(--space-9);
+    padding-bottom: var(--space-9);
+  }
+  .title {
+    margin: 0 0 var(--space-8);
+    max-width: 16ch;
+  }
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-9);
+  }
+
+  /* Étapes en zigzag : texte puis visuel, puis l'inverse. Empilées sur mobile. */
+  .step {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: var(--space-5) var(--space-8);
+    align-items: center;
+  }
+  .step:nth-child(even) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+  .step:nth-child(even) .step-media {
+    order: -1;
+  }
+  @media (max-width: 860px) {
+    .step,
+    .step:nth-child(even) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .step:nth-child(even) .step-media {
+      order: 0;
+    }
+    .steps {
+      gap: var(--space-8);
+    }
+  }
+
+  .step-copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .step-copy :global(.step-num) {
+    align-self: flex-start;
+    width: 50px;
+  }
+  .step-title {
+    margin: 0;
+  }
+  .step-text {
+    margin: 0;
+    color: var(--text-muted);
+    max-width: 40ch;
+  }
+
+  .shot {
+    margin: 0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    background: var(--night-900);
+    aspect-ratio: 16/10;
+    box-shadow: var(--shadow-card);
+  }
+  .shot-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(var(--zoom, 1));
+    transform-origin: left top;
+  }
+
+  /* Maquette de l'installeur Windows, construite avec les composants du design system. */
+  .setup {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    box-shadow: var(--shadow-pop);
+    font-size: var(--fs-small);
+  }
+  .setup-bar {
+    display: flex;
+    align-items: center;
+    height: 34px;
+    padding-left: 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 12.5px;
+    color: var(--text-muted);
+  }
+  .setup-bar span:not(.setup-name) {
+    width: 42px;
+    text-align: center;
+    font-size: 11px;
+  }
+  .setup-name {
+    flex: 1;
+  }
+  .setup-body {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+  .setup-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+  }
+  .setup-heading {
+    font-family: var(--font-display);
+    font-size: var(--fs-h3);
+    font-weight: 700;
+    line-height: var(--lh-snug);
+  }
+  .setup-rows {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .setup-rows div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  .setup-rows div:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  .setup-rows dt {
+    color: var(--text-muted);
+  }
+  .setup-rows dd {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .ok {
+    color: var(--status-online-text);
+    font-weight: 700;
+  }
+  .setup :global(.cab-switch) {
+    cursor: default;
+  }
+  .setup :global(.cab-switch input:disabled + .cab-switch__track) {
+    opacity: 1;
+  }
+  .setup-foot {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+  .setup-progress {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .setup-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-weight: 600;
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--status-offline);
+    transition: background-color var(--dur-ui);
+  }
+  .setup.is-done .dot {
+    background: var(--status-online);
+  }
+  .setup.is-done .setup-status {
+    color: var(--status-online-text);
+  }
+  .meter {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    width: 8%;
+    background: var(--violet-500);
+    border-radius: 5px;
+    transition: width 1.8s var(--ease-out);
+  }
+  .setup.is-running .meter-fill,
+  .setup.is-done .meter-fill {
+    width: 100%;
+  }
+
+  .download {
+    margin-top: var(--space-9);
+    padding-top: var(--space-7);
+    border-top: 1px solid var(--border-strong);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4) var(--space-5);
+    flex-wrap: wrap;
+  }
+  .download :global(.download-key) {
+    white-space: normal;
+  }
+  .download :global(.download-key .cab-key__top) {
+    white-space: normal;
+    text-align: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .download :global(.soon) {
+    transform: rotate(-4deg);
+  }
+  .download-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-basis: 100%;
+  }
+  .note {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .meter-fill {
+      transition: none;
+    }
+  }
+</style>

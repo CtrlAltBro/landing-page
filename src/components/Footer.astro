@@ -1,0 +1,54 @@
+---
+import Logo from './Logo.astro';
+import { links, useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale).footer;
+---
+
+<footer class="footer">
+  <div class="wrap inner">
+    <span role="img" aria-label="CtrlAltBro">
+      <Logo size="sm" />
+    </span>
+    <span class="tagline">{t.tagline}</span>
+    <div class="links">
+      <a href={links.repo} rel="noopener">
+        {t.github}
+      </a>
+      <a href={links.license} rel="noopener license">
+        {t.license}
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    background: var(--bg-alt);
+  }
+  .inner {
+    padding-top: var(--space-7);
+    padding-bottom: var(--space-7);
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+  .tagline {
+    flex: 1;
+    min-width: 200px;
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+  .links {
+    display: flex;
+    gap: var(--space-5);
+    font-size: var(--fs-small);
+    font-weight: 600;
+  }
+</style>

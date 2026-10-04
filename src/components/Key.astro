@@ -1,0 +1,45 @@
+---
+/**
+ * La touche CtrlAltBro (.cab-key) : rend un <a>, <button> ou <span> avec ses trois couches
+ * (ombre, jupe, dessus). Tout le style vient de styles/keys.css.
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends Omit<HTMLAttributes<'span'>, 'class'> {
+  tone?: 'cream' | 'violet' | 'sun' | 'night';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  square?: boolean;
+  pressable?: boolean;
+  href?: string;
+  as?: 'a' | 'button' | 'span';
+  class?: string;
+}
+
+const {
+  tone = 'cream',
+  size,
+  square,
+  pressable,
+  href,
+  as,
+  class: className,
+  ...rest
+} = Astro.props;
+const Tag = as ?? (href ? 'a' : 'span');
+const classes = [
+  'cab-key',
+  `cab-key--${tone}`,
+  size && `cab-key--${size}`,
+  square && 'cab-key--square',
+  pressable && 'cab-key--pressable',
+  className,
+];
+---
+
+<Tag class:list={classes} href={href} {...rest}>
+  <span class="cab-key__shadow" aria-hidden="true"></span>
+  <span class="cab-key__skirt" aria-hidden="true"></span>
+  <span class="cab-key__top">
+    <slot />
+  </span>
+</Tag>

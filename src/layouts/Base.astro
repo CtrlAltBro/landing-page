@@ -1,0 +1,99 @@
+---
+import { getImage } from 'astro:assets';
+import '../styles/global.css';
+import {
+  homePath,
+  links,
+  locales,
+  defaultLocale,
+  useScreens,
+  useTranslations,
+  type Locale,
+} from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const site = Astro.site;
+const abs = (path: string) => (site ? new URL(path, site).href : undefined);
+const canonical = abs(homePath(locale));
+const og = site
+  ? await getImage({ src: useScreens(locale).dashboard, width: 1200, format: 'jpg' })
+  : undefined;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'CtrlAltBro',
+  applicationCategory: 'UtilitiesApplication',
+  operatingSystem: 'Windows 10, Windows 11',
+  description: t.meta.description,
+  inLanguage: locale,
+  license: 'https://www.gnu.org/licenses/gpl-3.0.html',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  codeRepository: links.repo,
+  sameAs: [links.org, links.repo],
+  ...(canonical ? { url: canonical } : {}),
+};
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{t.meta.title}</title>
+    <meta name="description" content={t.meta.description} />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#FBF8F3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16131F" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      href="/fonts/bricolage-grotesque-normal-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/figtree-normal-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {site && locales.map((l) => <link rel="alternate" hreflang={l} href={abs(homePath(l))} />)}
+    {site && <link rel="alternate" hreflang="x-default" href={abs(homePath(defaultLocale))} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CtrlAltBro" />
+    <meta property="og:title" content={t.meta.title} />
+    <meta property="og:description" content={t.meta.description} />
+    <meta property="og:locale" content={t.ogLocale} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {og && <meta property="og:image" content={abs(og.src)} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        var t = null;
+        try {
+          t = localStorage.getItem('cab-theme');
+        } catch (e) {}
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches))
+          d.dataset.theme = 'dark';
+      })();
+    </script>
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <slot />
+    <script>
+      import '../scripts/motion';
+    </script>
+  </body>
+</html>

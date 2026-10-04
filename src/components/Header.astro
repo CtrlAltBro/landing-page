@@ -1,0 +1,125 @@
+---
+import Logo from './Logo.astro';
+import Key from './Key.astro';
+import { homePath, locales, useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<header class="site-header">
+  <nav class="bar wrap">
+    <a href="#top" class="home" aria-label={t.nav.home}>
+      <Logo size="sm" pressable />
+    </a>
+    <div class="spacer"></div>
+    <ul class="links">
+      {t.nav.links.map((l) => (
+        <li>
+          <a href={l.href}>{l.label}</a>
+        </li>
+      ))}
+    </ul>
+    <ul class="langs" aria-label={t.nav.langAria}>
+      {locales.map((l) => (
+        <li>
+          {l === locale ? (
+            <Key tone="violet" size="xs" aria-current="true" lang={l}>
+              {l.toUpperCase()}
+            </Key>
+          ) : (
+            <Key tone="cream" size="xs" pressable href={homePath(l)} hreflang={l} lang={l}>
+              {l.toUpperCase()}
+            </Key>
+          )}
+        </li>
+      ))}
+    </ul>
+    <button
+      type="button"
+      class="cab-ghost cab-ghost--sm theme-toggle"
+      data-theme-toggle
+      data-label-dark={t.nav.themeToDark}
+      data-label-light={t.nav.themeToLight}
+      aria-label={t.nav.themeAria}
+    >
+      {t.nav.themeToDark}
+    </button>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    transition: background-color 600ms var(--ease-out);
+  }
+  .bar {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+  }
+  .home {
+    display: inline-flex;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 8px;
+  }
+  .home:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 4px;
+  }
+  .spacer {
+    flex: 1;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .links {
+    display: flex;
+    gap: var(--space-5);
+    font-size: var(--fs-small);
+    font-weight: 600;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .links a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  .links a:hover {
+    color: var(--text-violet);
+  }
+  .langs {
+    display: flex;
+    gap: 6px;
+  }
+  .langs :global(.cab-key) {
+    --fs: 12px;
+    --px: 8px;
+  }
+  .theme-toggle {
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  @media (max-width: 860px) {
+    .links {
+      display: none;
+    }
+  }
+  @media (max-width: 420px) {
+    .bar {
+      gap: var(--space-3);
+    }
+  }
+</style>

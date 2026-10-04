@@ -1,0 +1,114 @@
+---
+import { useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale).tricks;
+---
+
+<section id="contournements" aria-labelledby="contournements-title" class="tricks">
+  <div class="wrap inner">
+    <h2 id="contournements-title" class="t-h2 title" data-reveal>
+      {t.title}
+    </h2>
+    <p class="lead" data-reveal>
+      {t.lead}
+    </p>
+    <ul class="list">
+      {t.items.map((item, i) => (
+        <li class="item" data-reveal style={`--reveal-delay:${i * 60}ms`}>
+          <div class="t-h3 attempt">{item.attempt}</div>
+          <div class="alert">
+            <span class="dot" aria-hidden="true"></span>
+            <span class="grow">
+              <span class="strong">{item.alert}</span> <span class="muted">{item.detail}</span>
+            </span>
+            <span class="time">{item.time}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .tricks {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .inner {
+    padding-top: var(--space-9);
+    padding-bottom: var(--space-9);
+  }
+  .title {
+    margin: 0 0 var(--space-4);
+    max-width: 16ch;
+  }
+  .lead {
+    margin: 0 0 var(--space-7);
+    color: var(--text-muted);
+    max-width: 52ch;
+  }
+  .list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .item {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: var(--space-3) var(--space-7);
+    padding: var(--space-5) 0;
+    border-top: 1px solid var(--border-strong);
+    align-items: baseline;
+  }
+  .attempt {
+    font-weight: 600;
+  }
+  .alert {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+  .dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--status-alert);
+    transform: translateY(-1px);
+  }
+  .item.is-visible .dot {
+    animation: blink 1.4s var(--ease-out) var(--reveal-delay, 0ms) 2;
+  }
+  @keyframes blink {
+    50% {
+      box-shadow: 0 0 0 6px color-mix(in oklch, var(--status-alert) 25%, transparent);
+    }
+  }
+  .grow {
+    flex: 1;
+  }
+  .strong {
+    font-weight: 600;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .time {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .item.is-visible .dot {
+      animation: none;
+    }
+  }
+</style>

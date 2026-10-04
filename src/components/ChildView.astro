@@ -1,0 +1,153 @@
+---
+import Key from './Key.astro';
+import { useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale).child;
+---
+
+<section aria-labelledby="enfant-title" class="child wrap">
+  <div class="intro" data-reveal>
+    <h2 id="enfant-title" class="t-h2 title">
+      {t.title}
+    </h2>
+    <p class="muted lead">{t.lead}</p>
+  </div>
+  <div class="screens">
+    <figure class="shot shot--wide" data-reveal>
+      <div class="screen screen--lock" data-theme="dark">
+        <Key tone="violet" size="lg" data-press-on-view>
+          {t.lockKey}
+        </Key>
+        <div class="lock-title">{t.lockTitle}</div>
+        <div class="muted lock-text">{t.lockText}</div>
+      </div>
+      <figcaption>{t.lockCaption}</figcaption>
+    </figure>
+    <figure class="shot" data-reveal style="--reveal-delay:100ms">
+      <div class="screen screen--block">
+        <Key tone="cream" size="sm" class="block-key" data-press-on-view>
+          {t.blockKey}
+        </Key>
+        <div class="block-title">{t.blockTitle}</div>
+        <div class="block-text">{t.blockText}</div>
+      </div>
+      <figcaption>{t.blockCaption}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .child {
+    padding-top: var(--space-9);
+    padding-bottom: var(--space-9);
+  }
+  .intro {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: var(--space-6) var(--space-8);
+    align-items: end;
+    margin-bottom: var(--space-7);
+  }
+  .title {
+    margin: 0;
+    max-width: 14ch;
+  }
+  .lead {
+    margin: 0;
+    max-width: 44ch;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .screens {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: var(--space-6);
+    align-items: start;
+  }
+  .shot {
+    margin: 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .shot--wide {
+    grid-column: span 2;
+  }
+  @media (max-width: 700px) {
+    .shot--wide {
+      grid-column: auto;
+    }
+  }
+  figcaption {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+  .screen {
+    border-radius: var(--radius-lg);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .screen--lock {
+    aspect-ratio: 16/10;
+    background: var(--bg);
+    color: var(--text);
+    border: 10px solid var(--night-950);
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-5);
+    text-align: center;
+    padding: var(--space-6);
+  }
+  .lock-title {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 4vw, 56px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: var(--ls-heading);
+  }
+  .lock-text {
+    max-width: 36ch;
+  }
+  .screen--block {
+    aspect-ratio: 4/3;
+    background: var(--bg-alt);
+    border: 10px solid var(--cream-200);
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+  :global([data-theme='dark']) .screen--block {
+    border-color: var(--night-700);
+  }
+  .screen--block :global(.block-key) {
+    align-self: flex-start;
+  }
+  .block-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.05;
+  }
+  .block-text {
+    font-size: var(--fs-small);
+    color: var(--text-muted);
+  }
+  @media (max-width: 520px) {
+    .screen--lock {
+      aspect-ratio: auto;
+      min-height: 320px;
+      padding: var(--space-5);
+    }
+    .screen--block {
+      aspect-ratio: auto;
+      min-height: 240px;
+    }
+  }
+</style>

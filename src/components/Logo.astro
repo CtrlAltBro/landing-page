@@ -1,0 +1,81 @@
+---
+/** Le logo : trois touches Ctrl · Alt · Bro. `size="hero"` pour la grande version animée. */
+import Key from './Key.astro';
+
+interface Props {
+  size?: 'sm' | 'hero';
+  pressable?: boolean;
+  intro?: boolean;
+}
+
+const { size = 'sm', pressable = false, intro = false } = Astro.props;
+const keys = [
+  { label: 'Ctrl', tone: 'cream' },
+  { label: 'Alt', tone: 'cream' },
+  { label: 'Bro', tone: 'violet' },
+] as const;
+---
+
+<span
+  class:list={['logo', `logo--${size}`]}
+  data-logo-intro={intro ? '' : undefined}
+  aria-hidden="true"
+>
+  {keys.map((k) => (
+    <Key tone={k.tone} pressable={pressable}>
+      {k.label}
+    </Key>
+  ))}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+  }
+  .logo--sm {
+    gap: 5px;
+  }
+  .logo--sm :global(.cab-key) {
+    --h: 37px;
+    --depth: 7px;
+    --inset: 2.6px;
+    --r: 6.4px;
+    --rt: 5px;
+    --px: 0px;
+    --fs: 11px;
+    --shine-top: 1.2px;
+    --shine-x: 2.4px;
+    --shine-h: 1.2px;
+    width: 40px;
+  }
+  .logo--hero {
+    gap: 13px;
+  }
+  .logo--hero :global(.cab-key) {
+    --h: 90px;
+    --depth: 16px;
+    --inset: 6.3px;
+    --r: 15.4px;
+    --rt: 11.8px;
+    --px: 0px;
+    --fs: 26px;
+    --shine-top: 2.7px;
+    --shine-x: 5.4px;
+    --shine-h: 2.7px;
+    width: 96px;
+  }
+  @media (max-width: 420px) {
+    .logo--hero {
+      gap: 9px;
+    }
+    .logo--hero :global(.cab-key) {
+      --h: 72px;
+      --depth: 13px;
+      --inset: 5px;
+      --r: 12.5px;
+      --rt: 9.5px;
+      --fs: 21px;
+      width: 78px;
+    }
+  }
+</style>

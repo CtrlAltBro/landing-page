@@ -1,0 +1,399 @@
+---
+import Key from './Key.astro';
+import { useTranslations, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const d = t.day;
+const first = d.events[0];
+const pct = (h: number) => (((h - 7) / 14) * 100).toFixed(2) + '%';
+const config = {
+  locale,
+  of: d.of,
+  online: d.online,
+  locked: d.locked,
+  events: d.events,
+};
+const initialClock = locale === 'fr' ? '7 h 00' : '7:00 am';
+const initialUsed = locale === 'fr' ? `0 min ${d.of} 2 h` : `0 min ${d.of} 2h`;
+---
+
+<section id="journee" aria-labelledby="journee-title" class="day" data-day={JSON.stringify(config)}>
+  <div class="panel" data-day-panel>
+    <div class="panel-inner wrap">
+      <h2 id="journee-title" class="t-h3 day-title">
+        {d.title}
+      </h2>
+
+      <div class="stage" aria-hidden="true">
+        <div class="story">
+          <div class="clock" data-day-clock>
+            {initialClock}
+          </div>
+          <p class="t-h3 story-title" data-day-title>
+            {first.title}
+          </p>
+          <p class="story-text" data-tl-text data-day-text>
+            {first.text}
+          </p>
+        </div>
+
+        <div class="pc-card">
+          <div class="pc-head">
+            <span class="pc-name">{d.pcName}</span>
+            <span class="dot" data-day-dot></span>
+            <span class="status" data-day-status>
+              {d.online}
+            </span>
+          </div>
+          <div class="usage">
+            <div class="row-between">
+              <span>{d.screenTime}</span>
+              <span class="num" data-day-used>
+                {initialUsed}
+              </span>
+            </div>
+            <div class="meter">
+              <div class="meter-fill" data-day-bar></div>
+            </div>
+          </div>
+          <div class="rows">
+            <div class="row">
+              <span class="grow">{d.app}</span>
+              <Key tone="cream" size="xs" hidden data-day-mc-blocked>
+                {d.blocked}
+              </Key>
+              <span class="muted" data-day-mc-open>
+                {d.appLimit}
+              </span>
+            </div>
+            <div class="row" data-tl-optional>
+              <span class="grow">{d.web}</span>
+              <span class="muted">{d.webValue}</span>
+            </div>
+            <div class="row" hidden data-day-bonus>
+              <span class="grow">{d.bonus}</span>
+              <Key tone="sun" size="xs">
+                {d.bonusKey}
+              </Key>
+            </div>
+            <div class="row" hidden data-day-alert>
+              <span class="dot dot--alert"></span>
+              <span class="grow alert">{d.alert}</span>
+              <span class="mono">{d.alertTime}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="track-wrap" aria-hidden="true">
+        <div class="track">
+          <div class="track-fill" data-day-progress></div>
+          {d.events.map((e, i) => (
+            <span
+              class:list={['tick', i === 0 && 'is-past']}
+              style={`left:${pct(e.h)}`}
+              data-day-tick
+            ></span>
+          ))}
+        </div>
+        <div class="axis">
+          {d.axis.map((label, i) => (
+            <span
+              class:list={[i % 2 === 1 && 'axis-minor']}
+              style={
+                i === 0
+                  ? 'left:0'
+                  : i === d.axis.length - 1
+                    ? 'right:0'
+                    : `left:${pct(7 + i * 4)};transform:translateX(-50%)`
+              }
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <ol class="sr-only">
+        {d.events.map((e) => (
+          <li>
+            <strong>{e.title}</strong> {e.text}
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initDayTimeline } from '../scripts/day-timeline';
+  initDayTimeline();
+</script>
+
+<style>
+  .day {
+    position: relative;
+    height: 440vh;
+    border-top: 1px solid var(--border);
+  }
+  .panel {
+    position: sticky;
+    top: var(--header-h);
+    min-height: calc(100svh - var(--header-h));
+    display: flex;
+    background: var(--bg);
+    color: var(--text);
+    transition:
+      background-color 600ms var(--ease-out),
+      color 600ms var(--ease-out);
+  }
+  .panel-inner {
+    flex: 1;
+    box-sizing: border-box;
+    padding-top: clamp(16px, 4vh, 48px);
+    padding-bottom: clamp(16px, 4vh, 48px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 3vh, 32px);
+  }
+  .day-title {
+    margin: 0;
+    flex: none;
+    color: var(--text-muted);
+  }
+  .stage {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+    gap: var(--space-6) var(--space-8);
+    align-content: center;
+  }
+  .story {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+  .clock {
+    font-family: var(--font-display);
+    font-size: min(var(--fs-display), 14vh);
+    font-weight: 800;
+    line-height: var(--lh-display);
+    letter-spacing: var(--ls-display);
+    font-variation-settings: 'opsz' 96;
+    font-variant-numeric: tabular-nums;
+  }
+  .story-title {
+    margin: 0;
+    max-width: 24ch;
+  }
+  .story-text {
+    margin: 0;
+    color: var(--text-muted);
+    max-width: 40ch;
+  }
+  .story-title,
+  .story-text {
+    transition:
+      opacity var(--dur-ui) var(--ease-out),
+      transform var(--dur-ui) var(--ease-out);
+  }
+  .story.is-changing .story-title,
+  .story.is-changing .story-text {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  .pc-card {
+    align-self: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    font-size: var(--fs-small);
+    transition: background-color 600ms var(--ease-out);
+  }
+  .pc-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .pc-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+    flex: 1;
+  }
+  .dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--status-online);
+  }
+  .dot.is-off {
+    background: var(--status-offline);
+  }
+  .dot--alert {
+    background: var(--status-alert);
+  }
+  .status {
+    font-weight: 600;
+    color: var(--status-online-text);
+  }
+  .status.is-off {
+    color: var(--status-offline-text);
+  }
+  .usage {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .row-between {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .num {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .meter {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+    overflow: hidden;
+  }
+  .meter-fill {
+    height: 100%;
+    width: 0;
+    background: var(--violet-500);
+    border-radius: 5px;
+    transition: width 200ms linear;
+  }
+  .rows {
+    display: flex;
+    flex-direction: column;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+  .row[hidden],
+  .rows :global(.cab-key[hidden]),
+  .muted[hidden] {
+    display: none;
+  }
+  .grow {
+    flex: 1;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .alert {
+    color: var(--status-alert-text);
+    font-weight: 600;
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .row.is-new {
+    animation: row-in 420ms var(--ease-out);
+  }
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  .track-wrap {
+    position: relative;
+    padding-top: 18px;
+  }
+  .track {
+    position: relative;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+  }
+  .track-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    background: var(--text);
+    border-radius: 3px;
+  }
+  .tick {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    margin: -6px 0 0 -6px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 2px solid var(--text);
+    background: var(--bg);
+    transition:
+      background-color var(--dur-ui) var(--ease-out),
+      transform var(--dur-release) var(--ease-release);
+  }
+  .tick.is-past {
+    background: var(--text);
+  }
+  .axis {
+    position: relative;
+    height: 22px;
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+  }
+  .axis span {
+    position: absolute;
+    white-space: nowrap;
+  }
+  @media (max-width: 520px) {
+    .axis-minor {
+      display: none;
+    }
+  }
+
+  @media (max-height: 720px), (max-width: 760px) {
+    [data-tl-optional] {
+      display: none !important;
+    }
+  }
+  @media (max-height: 600px) {
+    [data-tl-text] {
+      display: none !important;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .row.is-new {
+      animation: none;
+    }
+    .story.is-changing .story-title,
+    .story.is-changing .story-text {
+      transform: none;
+    }
+  }
+</style>
