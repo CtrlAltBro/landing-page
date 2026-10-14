@@ -56,17 +56,16 @@ function onView() {
 
 function themeToggle() {
   const root = document.documentElement;
-  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]');
+  const buttons = document.querySelectorAll<HTMLInputElement>('[data-theme-toggle]');
   const sync = () => {
     const dark = root.dataset.theme === 'dark';
     buttons.forEach((b) => {
-      b.textContent = (dark ? b.dataset.labelLight : b.dataset.labelDark) ?? b.textContent;
-      b.setAttribute('aria-pressed', String(dark));
+      b.checked = dark;
     });
   };
   buttons.forEach((b) =>
-    b.addEventListener('click', () => {
-      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    b.addEventListener('change', () => {
+      const next = b.checked ? 'dark' : 'light';
       if (next === 'dark') root.dataset.theme = 'dark';
       else delete root.dataset.theme;
       try {

@@ -1,0 +1,60 @@
+---
+title: Votre PC. Vos règles. Votre serveur.
+description: Le guide pour héberger CtrlAltBro et installer le contrôle parental sur Windows.
+template: splash
+hero:
+  tagline: Installez votre instance, connectez le PC de votre enfant et gardez la main sur vos données.
+  actions:
+    - text: Choisir mon hébergement
+      link: /docs/hebergement/
+      icon: right-arrow
+      variant: primary
+    - text: Comprendre le fonctionnement
+      link: /docs/architecture/
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Du serveur au premier PC
+
+<CardGrid>
+  <LinkCard
+    title="1. Déployer le serveur"
+    description="Votre dashboard, votre base PostgreSQL et votre instance Cloudflare."
+    href="/docs/cloudflare/"
+  />
+  <LinkCard
+    title="2. Installer sur Windows"
+    description="Choisissez les comptes surveillés et appairez le PC à votre serveur."
+    href="/docs/windows/"
+  />
+  <LinkCard
+    title="3. Poser les règles"
+    description="Applications, sites, horaires et limites quotidiennes."
+    href="/docs/regles/"
+  />
+  <LinkCard
+    title="4. Entretenir l’instance"
+    description="Sauvegardes, migrations et mises à jour."
+    href="/docs/maintenance/"
+  />
+</CardGrid>
+
+## Où en est le self-host ?
+
+Le serveur actuel se déploie sur **votre compte Cloudflare**, avec une base PostgreSQL que vous choisissez. L’agent Windows accepte l’adresse de cette instance.
+
+L’installation complète sur un VPS ou un NAS, sans Cloudflare, **n’est pas encore fournie** : le runtime serveur et le remplacement du stockage KV restent à préparer. [Comparer les modes d’hébergement](/docs/hebergement/).
+
+<CardGrid>
+  <Card title="Les règles restent sur le PC" icon="laptop">
+    Une fois reçues, les règles sont appliquées localement, même si la connexion Internet tombe.
+  </Card>
+  <Card title="Le parent garde son compte" icon="setting">
+    Le service surveille les comptes Windows sélectionnés. Utilisez un compte standard pour l’enfant
+    et un compte administrateur distinct pour le parent.
+  </Card>
+</CardGrid>
+
+Cette première édition décrit le code examiné le **9 octobre 2026**. Les procédures de déploiement sont à valider sur une instance neuve ; elles ne constituent pas un nouveau test de l’agent sur Windows.

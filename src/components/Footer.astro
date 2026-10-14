@@ -16,6 +16,9 @@ const t = useTranslations(locale).footer;
     </span>
     <span class="tagline">{t.tagline}</span>
     <div class="links">
+      <a href={locale === 'en' ? '/en/docs/' : '/docs/'}>
+        {locale === 'fr' ? 'Documentation' : 'Documentation'}
+      </a>
       <a href={links.repo} rel="noopener">
         {t.github}
       </a>

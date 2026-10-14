@@ -1,0 +1,29 @@
+---
+import type { Locale } from '../i18n';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const label = locale === 'fr' ? 'Mode sombre' : 'Dark mode';
+---
+
+<label class="cab-switch theme-switch" title={label}>
+  <input type="checkbox" role="switch" data-theme-toggle aria-label={label} />
+  <span class="cab-switch__track" aria-hidden="true">
+    <span class="cab-switch__knob">
+      <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+      </svg>
+      <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20.5 13.2A8.5 8.5 0 0 1 10.8 3.5a8.5 8.5 0 1 0 9.7 9.7Z" />
+      </svg>
+    </span>
+  </span>
+</label>
+
+<style>
+  .theme-switch { flex-shrink: 0; padding-block: 7px; }
+  svg { position: absolute; z-index: 1; width: 16px; height: 16px; left: 4px; top: 3px; color: #453c59; }
+  .moon { display: none; }
+  input:checked + span .sun { display: none; }
+  input:checked + span .moon { display: block; }
+</style>

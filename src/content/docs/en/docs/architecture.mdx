@@ -1,0 +1,59 @@
+---
+title: Architecture and sync
+description: How the parent, server and PC exchange rules and data.
+---
+
+import Architecture from '../../../../components/docs/Architecture.astro';
+
+<Architecture locale="en" />
+
+## Three parts
+
+| Part           | Responsibility                                                         |
+| -------------- | ---------------------------------------------------------------------- |
+| Parent browser | Dashboard, rules, schedules, commands and PC status                    |
+| Server         | Authentication, PostgreSQL storage, KV signals and API contract        |
+| Windows PC     | Local enforcement by the service; sensor and UI in the child’s session |
+
+The parent browser contacts the Worker over HTTPS. On the PC, the service contacts the API; the session app uses the local pipe `\\.\pipe\ctrlaltbro`. The agent opens no network port to receive commands.
+
+## The service enforces rules
+
+The service runs as SYSTEM through WinSW. It keeps rules and counters in `%ProgramData%\CtrlAltBro`, supervises the session app and enforces limits even when that app is closed.
+
+The Electron app runs without elevation in the monitored session. It observes the foreground application, sends measurements and displays messages and time-up screens. If the sensor is unavailable, the service falls back to less precise counting based on running processes.
+
+A standard account normally cannot stop the service or modify its protected files. An administrator retains control of the machine.
+
+## From pairing to rules
+
+1. `POST /api/agent/v1/pair` exchanges a one-time code for a device token.
+2. `POST /api/agent/v1/ping` checks signals about every **30 seconds**.
+3. `POST /api/agent/v1/sync` uploads pending data and receives rules and commands.
+4. `POST /api/agent/v1/bye` reports shutdown or sleep.
+
+A rule change or command updates `rev:` in KV. The next ping detects the change and triggers synchronization. When the parent views the PC, `view:` enables fast mode at **15 seconds**.
+
+Pending command results, queued events, a screen-time batch or a forced upload also trigger a full sync. Outside fast mode, screen time is uploaded in batches about every 15 minutes.
+
+A normal ping uses KV. A cold token cache requires a PostgreSQL lookup to rebuild it. Full synchronization uses PostgreSQL.
+
+:::note[Rules do not arrive instantly]
+The delay includes the next ping and Workers KV propagation. KV is eventually consistent: do not promise a strict maximum of 15 or 30 seconds. See [how KV works](https://developers.cloudflare.com/kv/concepts/how-kv-works/).
+:::
+
+## Presence and alerts
+
+KV holds `tok:` for tokens, `rev:` for changes, `view:` for a viewing parent and **`pres:` for presence**. Presence records are kept for a week and refreshed about every four minutes, or when health changes or a clean departure occurs.
+
+- **Online**: contact less than six minutes old, without a recorded clean departure.
+- **Offline**: reported shutdown/sleep, or presence that has become too old.
+- **Silent**: no contact for at least 20 minutes without a clean departure, with a previously signed-in child, between 7 am and 11 pm in the PC’s time zone, and the last contact within 24 hours.
+
+“PC online” and “child signed in” are different states. Silent alerts appear in the dashboard; email and push notifications are not currently provided.
+
+## Trust limits
+
+The pipe is accessible to local users. The client announces its SID; the service does not authenticate it by verifying the calling executable. Measurements are cross-checked against observed processes, but this is not full pipe authentication.
+
+Monitored accounts are selected by SID. Rules and counters remain PC-wide: monitoring multiple children does not create separate quotas.

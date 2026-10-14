@@ -1,0 +1,130 @@
+---
+interface Props {
+  locale?: 'fr' | 'en';
+}
+const en = Astro.props.locale === 'en';
+---
+
+<figure
+  class="architecture"
+  aria-label={
+    en
+      ? 'The parent contacts the server. The Windows service contacts the API over HTTPS and exchanges data with the child app over a local pipe.'
+      : 'Le parent contacte le serveur. Le service Windows contacte l’API en HTTPS et échange avec l’application enfant par un pipe local.'
+  }
+>
+  <div class="flow">
+    <div class="node">
+      <span>01 · PARENT</span>
+      <strong>Dashboard</strong>
+      <p>{en ? 'Rules, schedules and commands' : 'Règles, horaires et commandes'}</p>
+    </div>
+    <div class="connection">
+      HTTPS <span aria-hidden="true">↔</span>
+    </div>
+    <div class="node cloud">
+      <span>{en ? '02 · SERVER' : '02 · SERVEUR'}</span>
+      <strong>{en ? 'Hono API' : 'API Hono'}</strong>
+      <p>PostgreSQL · KV · Better Auth</p>
+    </div>
+    <div class="connection">
+      {en ? 'Outbound HTTPS' : 'HTTPS sortant'} <span aria-hidden="true">↔</span>
+    </div>
+    <div class="node system">
+      <span>{en ? '03 · WINDOWS PC' : '03 · PC WINDOWS'}</span>
+      <strong>{en ? 'SYSTEM service' : 'Service SYSTEM'}</strong>
+      <p>{en ? 'Cached rules · limit enforcement' : 'Règles en cache · application des limites'}</p>
+    </div>
+  </div>
+  <div class="session">
+    <span aria-hidden="true">↕</span>
+    <span>{en ? 'Local pipe' : 'Pipe local'}</span>
+    <strong>{en ? 'Electron app' : 'Application Electron'}</strong>
+    <span>
+      {en ? 'Child session · foreground and messages' : 'Session enfant · premier plan et messages'}
+    </span>
+  </div>
+  <figcaption>
+    {en
+      ? 'The service contacts the server. The agent opens no inbound network port on the PC.'
+      : 'Le service contacte le serveur. Aucun port réseau entrant n’est ouvert sur le PC par l’agent.'}
+  </figcaption>
+</figure>
+
+<style>
+  .architecture {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--sl-color-gray-6);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 1rem;
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .node {
+    padding: 1rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--sl-color-gray-4);
+    background: var(--sl-color-black);
+  }
+  .node > span {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--sl-color-gray-2);
+  }
+  strong {
+    display: block;
+    font-family: 'Bricolage Grotesque', var(--sl-font);
+  }
+  p {
+    font-size: 0.8rem;
+    margin: 0.35rem 0 0;
+  }
+  .cloud {
+    border-color: var(--sl-color-accent);
+  }
+  .system {
+    border-color: #22a35a;
+  }
+  .connection {
+    text-align: center;
+    font-size: 0.7rem;
+    color: var(--sl-color-gray-2);
+  }
+  .connection span {
+    display: block;
+    font-size: 1.5rem;
+    transform: rotate(90deg);
+  }
+  .session {
+    display: grid;
+    text-align: center;
+    font-size: 0.75rem;
+    margin-top: 0.75rem;
+    gap: 0.2rem;
+  }
+  .session strong {
+    font-size: 1rem;
+  }
+  figcaption {
+    margin-top: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--sl-color-gray-2);
+  }
+  @media (min-width: 70rem) {
+    .flow {
+      grid-template-columns: 1fr 4rem 1fr 4rem 1fr;
+      align-items: center;
+    }
+    .connection span {
+      transform: none;
+    }
+    .session {
+      margin-left: 70%;
+    }
+  }
+</style>

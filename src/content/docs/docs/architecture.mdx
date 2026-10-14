@@ -1,0 +1,59 @@
+---
+title: Architecture et synchronisation
+description: Comment le parent, le serveur et le PC échangent les règles et les données.
+---
+
+import Architecture from '../../../components/docs/Architecture.astro';
+
+<Architecture />
+
+## Trois parties
+
+| Partie               | Responsabilité                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------ |
+| Navigateur du parent | Dashboard, règles, horaires, commandes et état des PC                                      |
+| Serveur              | Authentification, stockage PostgreSQL, signaux KV et contrat API                           |
+| PC Windows           | Application locale des règles par le service ; capteur et interface dans la session enfant |
+
+Le navigateur du parent contacte le Worker en HTTPS. Sur le PC, le service contacte l’API ; l’application de session utilise le pipe local `\\.\pipe\ctrlaltbro`. Le PC n’ouvre pas de port réseau pour recevoir les commandes.
+
+## Le service fait appliquer les règles
+
+Le service tourne sous SYSTEM via WinSW. Il conserve les règles et compteurs dans `%ProgramData%\CtrlAltBro`, supervise l’application de session et applique les limites même si celle-ci est fermée.
+
+L’application Electron tourne sans élévation dans la session surveillée. Elle observe le premier plan, envoie les mesures et affiche messages et écrans de fin de temps. Lorsque le capteur manque, le service utilise un comptage de secours plus grossier basé sur les processus en cours.
+
+Un compte standard ne peut normalement pas arrêter le service ni modifier ses fichiers protégés. Un administrateur reste maître de la machine.
+
+## Du code d’appairage aux règles
+
+1. `POST /api/agent/v1/pair` échange un code à usage unique contre un jeton d’appareil.
+2. `POST /api/agent/v1/ping` vérifie les signaux environ toutes les **30 secondes**.
+3. `POST /api/agent/v1/sync` envoie les données en attente et reçoit règles et commandes.
+4. `POST /api/agent/v1/bye` signale un arrêt ou une mise en veille.
+
+Un changement de règle ou une commande modifie `rev:` dans KV. Au ping suivant, le service détecte ce changement et synchronise. Quand le parent consulte le PC, `view:` active le mode rapide, à **15 secondes**.
+
+Une synchronisation complète est aussi déclenchée par des résultats de commandes, des événements en attente, un lot de temps d’écran ou un envoi forcé. Hors mode rapide, le temps d’écran est envoyé par lots, environ toutes les 15 minutes.
+
+Le chemin normal du ping utilise KV. Si le cache du jeton est froid, une lecture PostgreSQL est nécessaire pour le reconstruire. La synchronisation complète utilise PostgreSQL.
+
+:::note[Une règle n’arrive pas instantanément]
+Le délai comprend l’attente du prochain ping et la propagation de Workers KV. KV est à cohérence éventuelle : évitez de promettre un délai maximal strict de 15 ou 30 secondes. Voir [le fonctionnement de KV](https://developers.cloudflare.com/kv/concepts/how-kv-works/).
+:::
+
+## Présence et alertes
+
+Le KV contient `tok:` pour les jetons, `rev:` pour les changements, `view:` pour le parent qui consulte et **`pres:` pour la présence**. Le record de présence est conservé une semaine et réécrit environ toutes les quatre minutes, ou lors d’un changement de santé ou d’un départ propre.
+
+- **En ligne** : contact récent, de moins de six minutes, sans départ propre enregistré.
+- **Hors ligne** : arrêt/veille déclaré, ou présence devenue trop ancienne.
+- **Silencieux** : aucun contact depuis au moins 20 minutes sans départ propre, avec un enfant précédemment connecté, entre 7 h et 23 h dans le fuseau du PC et un contact datant de moins de 24 h.
+
+« PC en ligne » et « enfant connecté » sont des états distincts. L’alerte de silence est affichée dans le dashboard ; l’envoi de notifications email ou push n’est pas fourni actuellement.
+
+## Limites de confiance
+
+Le pipe est accessible aux utilisateurs locaux. Le SID est annoncé par le client et n’est pas authentifié par une vérification de l’exécutable appelant. Le service recoupe des mesures avec les processus observés, mais ce mécanisme ne doit pas être présenté comme une authentification complète du pipe.
+
+Les comptes surveillés sont sélectionnés par SID. Les règles et compteurs restent au niveau du PC : surveiller plusieurs enfants ne crée pas des quotas séparés.
