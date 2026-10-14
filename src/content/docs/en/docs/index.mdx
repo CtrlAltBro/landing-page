@@ -1,0 +1,60 @@
+---
+title: Your PC. Your rules. Your server.
+description: Host CtrlAltBro and install parental control on Windows.
+template: splash
+hero:
+  tagline: Deploy your instance, connect your child’s PC and keep control of your data.
+  actions:
+    - text: Choose my hosting
+      link: /en/docs/hebergement/
+      icon: right-arrow
+      variant: primary
+    - text: Understand how it works
+      link: /en/docs/architecture/
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## From your server to your first PC
+
+<CardGrid>
+  <LinkCard
+    title="1. Deploy the server"
+    description="Your dashboard, PostgreSQL database and Cloudflare instance."
+    href="/en/docs/cloudflare/"
+  />
+  <LinkCard
+    title="2. Install on Windows"
+    description="Choose monitored accounts and pair the PC with your server."
+    href="/en/docs/windows/"
+  />
+  <LinkCard
+    title="3. Set the rules"
+    description="Applications, websites, schedules and daily limits."
+    href="/en/docs/regles/"
+  />
+  <LinkCard
+    title="4. Maintain your instance"
+    description="Backups, migrations and updates."
+    href="/en/docs/maintenance/"
+  />
+</CardGrid>
+
+## What can you self-host today?
+
+The current server deploys to **your Cloudflare account**, with a PostgreSQL database of your choice. The Windows agent accepts your instance’s address.
+
+A complete VPS or NAS installation without Cloudflare **is not provided yet**. A server runtime and a replacement for KV storage still need to be prepared. [Compare hosting options](/en/docs/hebergement/).
+
+<CardGrid>
+  <Card title="Rules stay on the PC" icon="laptop">
+    Once received, rules are enforced locally, even if the Internet connection goes down.
+  </Card>
+  <Card title="The parent keeps their account" icon="setting">
+    The service monitors selected Windows accounts. Use a standard account for your child and a
+    separate administrator account for the parent.
+  </Card>
+</CardGrid>
+
+This first edition describes code reviewed on **9 October 2026**. Deployment procedures still need validation on a fresh instance; this review is not a new Windows agent test.

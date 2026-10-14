@@ -1,0 +1,38 @@
+---
+import Logo from '../Logo.astro';
+const english = Astro.locals.starlightRoute.lang === 'en';
+---
+
+<a
+  href={english ? '/en/docs/' : '/docs/'}
+  class="docs-brand"
+  aria-label="CtrlAltBro — documentation"
+>
+  <Logo size="sm" />
+  <span>DOCS</span>
+</a>
+
+<style>
+  .docs-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--sl-color-text);
+  }
+  .docs-brand span {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    border-left: 1px solid var(--sl-color-hairline);
+    padding-left: 1rem;
+  }
+  @media (max-width: 400px) {
+    .docs-brand {
+      gap: 0.5rem;
+    }
+    .docs-brand span {
+      padding-left: 0.5rem;
+    }
+  }
+</style>

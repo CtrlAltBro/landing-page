@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "ctrlaltbro",
+  "compatibility_date": "2026-10-14",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  // Requis par `npx wrangler preview` (builds des branches hors prod).
+  // Vide : les previews reprennent la config ci-dessus.
+  "previews": {}
+}

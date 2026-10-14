@@ -1,6 +1,7 @@
 ---
 import Logo from './Logo.astro';
 import Key from './Key.astro';
+import ThemeToggle from './ThemeToggle.astro';
 import { homePath, locales, useTranslations, type Locale } from '../i18n';
 
 interface Props {
@@ -22,6 +23,9 @@ const t = useTranslations(locale);
           <a href={l.href}>{l.label}</a>
         </li>
       ))}
+      <li>
+        <a href={locale === 'en' ? '/en/docs/' : '/docs/'}>Documentation</a>
+      </li>
     </ul>
     <ul class="langs" aria-label={t.nav.langAria}>
       {locales.map((l) => (
@@ -38,18 +42,89 @@ const t = useTranslations(locale);
         </li>
       ))}
     </ul>
-    <button
+    <span class="theme-toggle"><ThemeToggle locale={locale} /></span>
+    <Key
+      as="button"
+      tone="violet"
+      size="sm"
+      square
+      pressable
+      class="menu-toggle"
       type="button"
-      class="cab-ghost cab-ghost--sm theme-toggle"
-      data-theme-toggle
-      data-label-dark={t.nav.themeToDark}
-      data-label-light={t.nav.themeToLight}
-      aria-label={t.nav.themeAria}
+      aria-expanded="false"
+      aria-controls="landing-menu"
+      aria-label={locale === 'fr' ? 'Ouvrir le menu' : 'Open menu'}
+      data-menu-toggle
+      data-open-label={locale === 'fr' ? 'Ouvrir le menu' : 'Open menu'}
+      data-close-label={locale === 'fr' ? 'Fermer le menu' : 'Close menu'}
     >
-      {t.nav.themeToDark}
-    </button>
+      <span class="burger" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </span>
+    </Key>
   </nav>
+  <div id="landing-menu" class="mobile-menu" hidden>
+    <nav
+      class="wrap mobile-inner"
+      aria-label={locale === 'fr' ? 'Navigation mobile' : 'Mobile navigation'}
+    >
+      <span class="menu-caption">{locale === 'fr' ? 'À vous les commandes' : 'Take control'}</span>
+      {t.nav.links.map((link, i) => (
+        <a href={link.href}>
+          <span class="menu-number">0{i + 1}</span>
+          <span>{link.label}</span>
+          <span class="menu-arrow" aria-hidden="true">
+            ↗
+          </span>
+        </a>
+      ))}
+      <a href={locale === 'en' ? '/en/docs/' : '/docs/'}>
+        <span class="menu-number">05</span>
+        <span>Documentation</span>
+        <span class="menu-arrow" aria-hidden="true">
+          ↗
+        </span>
+      </a>
+      <span class="menu-theme"><ThemeToggle locale={locale} /></span>
+    </nav>
+  </div>
 </header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('.site-header');
+  const toggle = header?.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = header?.querySelector<HTMLElement>('#landing-menu');
+  if (header && toggle && menu) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute(
+        'aria-label',
+        (open ? toggle.dataset.closeLabel : toggle.dataset.openLabel) ?? 'Menu',
+      );
+      menu.hidden = !open;
+    };
+    toggle.addEventListener('click', () =>
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true'),
+    );
+    menu.addEventListener('click', (event) => {
+      if ((event.target as Element).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (!header.contains(event.target as Node)) setOpen(false);
+    });
+    matchMedia('(min-width: 861px)').addEventListener('change', (event) => {
+      if (event.matches) setOpen(false);
+    });
+  }
+</script>
 
 <style>
   .site-header {
@@ -112,14 +187,126 @@ const t = useTranslations(locale);
     text-decoration: none;
     white-space: nowrap;
   }
+  :global(.menu-toggle) {
+    display: none;
+  }
+  .burger {
+    width: 18px;
+    display: grid;
+    gap: 4px;
+  }
+  .burger span {
+    width: 18px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      transform 180ms ease,
+      opacity 180ms ease;
+  }
+  :global(.menu-toggle[aria-expanded='true']) .burger span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  :global(.menu-toggle[aria-expanded='true']) .burger span:nth-child(2) {
+    opacity: 0;
+  }
+  :global(.menu-toggle[aria-expanded='true']) .burger span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+  .mobile-menu[hidden] {
+    display: none;
+  }
+  .mobile-menu {
+    border-top: 1px solid var(--border);
+    background: var(--bg-alt);
+    max-height: calc(100dvh - 80px);
+    overflow-y: auto;
+    box-shadow: 0 20px 32px rgba(28, 24, 48, 0.12);
+  }
+  .mobile-inner {
+    padding-block: 20px 28px;
+    display: grid;
+    animation: menu-enter 180ms ease-out;
+  }
+  .menu-caption {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .mobile-inner a {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 4px;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    font: 700 24px var(--font-display);
+  }
+  .mobile-inner a:hover {
+    color: var(--text-violet);
+  }
+  .menu-number {
+    font: 12px var(--font-mono);
+    color: var(--text-muted);
+  }
+  .menu-arrow {
+    margin-left: auto;
+    color: var(--text-violet);
+  }
+  .menu-theme {
+    justify-self: start;
+    margin-top: 20px;
+  }
+  @keyframes menu-enter {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-inner {
+      animation: none;
+    }
+    .burger span {
+      transition: none;
+    }
+  }
   @media (max-width: 860px) {
     .links {
       display: none;
     }
+    :global(.menu-toggle) {
+      display: inline-flex;
+      --h: 40px;
+      --px: 12px;
+      --r: 8px;
+    }
+    .bar {
+      gap: 12px;
+    }
+    .theme-toggle {
+      font-size: 12px;
+    }
   }
   @media (max-width: 420px) {
     .bar {
-      gap: var(--space-3);
+      gap: 8px;
+    }
+    .theme-toggle {
+      display: none;
+    }
+  }
+  @media (max-width: 600px) {
+    .theme-toggle {
+      font-size: 12px;
     }
   }
 </style>
